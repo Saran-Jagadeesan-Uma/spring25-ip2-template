@@ -46,21 +46,20 @@ const useAuth = (authType: 'login' | 'signup') => {
     e: ChangeEvent<HTMLInputElement>,
     field: 'username' | 'password' | 'confirmPassword',
   ) => {
-
     setErr('');
     const { value } = e.target;
     if (field === 'username') setUsername(value);
     else if (field === 'password') setPassword(value);
     else if (field === 'confirmPassword') setPasswordConfirmation(value);
   };
+
   /**
    * Validates the input fields for the form.
    * Ensures required fields are filled and passwords match (for signup).
    *
    * @returns {boolean} True if inputs are valid, false otherwise.
    */
-   const validateInputs = (): boolean => {
-
+  const validateInputs = (): boolean => {
     if (!username || !password) {
       setErr('Username and password are both required.');
       return false;
@@ -71,7 +70,7 @@ const useAuth = (authType: 'login' | 'signup') => {
         return false;
       }
       if (password !== passwordConfirmation) {
-        setErr('Passwords dont match.');
+        setErr('Passwords don’t match.');
         return false;
       }
     }
@@ -91,7 +90,7 @@ const useAuth = (authType: 'login' | 'signup') => {
     if (!validateInputs()) return;
     let user: User;
 
-try {
+    try {
       if (authType === 'login') {
         user = await loginUser({ username, password });
       } else {
