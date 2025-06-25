@@ -17,13 +17,11 @@ const ProfileSettings: React.FC = () => {
     canEditProfile,
     showPassword,
     togglePasswordVisibility,
-
     setEditBioMode,
     setNewBio,
     setNewPassword,
     setConfirmNewPassword,
     setShowConfirmation,
-
     handleResetPassword,
     handleUpdateBiography,
     handleDeleteUser,
@@ -38,7 +36,6 @@ const ProfileSettings: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div className='page-container'>
       <div className='profile-card'>
@@ -51,7 +48,6 @@ const ProfileSettings: React.FC = () => {
             <p>
               <strong>Username:</strong> {userData.username}
             </p>
-
             {/* ---- Biography Section ---- */}
             {!editBioMode && (
               <p>
@@ -60,19 +56,18 @@ const ProfileSettings: React.FC = () => {
                   <button
                     className='login-button'
                     style={{ marginLeft: '1rem' }}
-                    onClick={
-                      /* TODO: Task 1 - Complete the click handler function to enter the editing mode and 
-                      initialize the editing field with the current user profile biography. */ () => {}
-                    }>
+                    onClick={() => {
+                      setEditBioMode(true);
+                      setNewBio(userData.biography || '');
+                    }}>
                     Edit
                   </button>
                 )}
               </p>
             )}
-
             {/* TODO: Task 1 - Conditionally render the below `div` such that it's only displayed when currently
             editing the biography, and the user has the permission to make edits to the profile. */}
-            {
+            {editBioMode && canEditProfile && (
               <div style={{ margin: '1rem 0' }}>
                 <input
                   className='input-text'
@@ -93,15 +88,13 @@ const ProfileSettings: React.FC = () => {
                   Cancel
                 </button>
               </div>
-            }
-
+            )}
             <p>
               <strong>Date Joined:</strong>{' '}
               {userData.dateJoined ? new Date(userData.dateJoined).toLocaleDateString() : 'N/A'}
             </p>
-
             {/* ---- Reset Password Section ---- */}
-            {
+            {canEditProfile && (
               /* TODO: Task 1 - Conditionally render the component such that it's only displayed 
               if the current user has the appropriate permissions to edit the profile. */
               <>
@@ -111,11 +104,20 @@ const ProfileSettings: React.FC = () => {
                 is entered. Make sure that the password visibility is correctly toggled.
                 Use the 'input-text' class for styling.
                 */}
-                {/* TODO: Task 1 - Add an input field for the password confirmation input.
-                The input field should correctly update the value when text
-                is entered. Make sure that the password visibility is correctly toggled.
-                Use the 'input-text' class for styling.
-                */}
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className='input-text'
+                  placeholder='New Password'
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className='input-text'
+                  placeholder='Confirm Password'
+                  value={confirmNewPassword}
+                  onChange={e => setConfirmNewPassword(e.target.value)}
+                />
                 <button className='toggle-password-button' onClick={togglePasswordVisibility}>
                   {showPassword ? 'Hide Passwords' : 'Show Passwords'}
                 </button>
@@ -123,10 +125,9 @@ const ProfileSettings: React.FC = () => {
                   Reset
                 </button>
               </>
-            }
-
+            )}
             {/* ---- Danger Zone (Delete User) ---- */}
-            {
+            {canEditProfile && (
               /* TODO: Task 1 - Conditionally render the component such that it's only displayed 
               if the current user has the appropriate permissions to edit the profile. */
               <>
@@ -135,12 +136,11 @@ const ProfileSettings: React.FC = () => {
                   Delete This User
                 </button>
               </>
-            }
+            )}
           </>
         ) : (
           <p>No user data found. Make sure the username parameter is correct.</p>
         )}
-
         {/* ---- Confirmation Modal for Delete ---- */}
         {showConfirmation && (
           <div className='modal'>
