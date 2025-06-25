@@ -14,6 +14,10 @@ import useNimGamePage from '../../../../hooks/useNimGamePage';
 const NimGamePage = ({ gameState }: { gameState: GameInstance }) => {
   const { user, move, handleMakeMove, handleInputChange } = useNimGamePage(gameState);
 
+  const gameInProgress = gameState.state.status === 'IN_PROGRESS';
+  const isUserTurn =
+    (gameState.state.moves.length % 2 === 0 ? gameState.state.player1 : gameState.state.player2) ===
+    user.username;
   return (
     <>
       <div className='nim-rules'>
@@ -27,6 +31,7 @@ const NimGamePage = ({ gameState }: { gameState: GameInstance }) => {
         </ol>
         <p>Think strategically and try to force your opponent into a losing position!</p>
       </div>
+      ;
       <div className='nim-game-details'>
         <h2>Current Game</h2>
         {/* TODO: Task 2 - Display the following game details using <p> elements:
@@ -36,8 +41,28 @@ const NimGamePage = ({ gameState }: { gameState: GameInstance }) => {
           - Remaining Objects: The number of objects remaining in the pile.
           - Winner: The winner of the game, or "No winner" if the winner is not defined. (Conditionally rendered)
         */}
+        <p>
+          <strong>Player 1:</strong> {gameState.state.player1 || 'Waiting...'}
+        </p>
+        <p>
+          <strong>Player 2:</strong> {gameState.state.player2 || 'Waiting...'}
+        </p>
+        <p>
+          <strong>Current Player to Move:</strong>{' '}
+          {gameState.state.moves.length % 2 === 0
+            ? gameState.state.player1 || 'Waiting...'
+            : gameState.state.player2 || 'Waiting...'}
+        </p>
+        <p>
+          <strong>Remaining Objects:</strong> {gameState.state.remainingObjects}
+        </p>
+        {gameState.state.winners && gameState.state.winners.length > 0 && (
+          <p>
+            <strong>Winner:</strong> {gameState.state.winners.join(', ')}
+          </p>
+        )}
         {/* TODO: Task 2 - Conditionally render game move input for an in progress game */}
-        {
+        {gameInProgress && (
           <div className='nim-game-move'>
             <h3>Make Your Move</h3>
             {/* TODO: Task 2 - Implement the input field which takes a number input.
@@ -45,8 +70,19 @@ const NimGamePage = ({ gameState }: { gameState: GameInstance }) => {
             {/* TODO: Task 2 - Implement the submit button which submits the entered move.
             The button should be disabled if it is not the user's turn.
             Use the class name 'btn-submit' for styling. */}
+            <input
+              type='number'
+              className='input-move'
+              value={move}
+              onChange={handleInputChange}
+              min={1}
+              max={3}
+            />
+            <button className='btn-submit' onClick={handleMakeMove} disabled={!isUserTurn}>
+              Submit Move
+            </button>
           </div>
-        }
+        )}
       </div>
     </>
   );

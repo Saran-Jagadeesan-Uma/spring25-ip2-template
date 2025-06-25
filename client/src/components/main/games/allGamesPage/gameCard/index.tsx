@@ -24,9 +24,12 @@ const GameCard = ({
         <li key={`${game.gameID}-${player}`}>{player}</li>
       ))}
     </ul>
-    {/* TODO: Task 2 - Create a "Join Game" button, which joins this game ID on click. 
-    Make sure that the button is only displayed for a game that is waiting to start.
-    Use the class name 'btn-join-game' for styling. */}
+
+    {game.state.status === 'WAITING_TO_START' && (
+      <button className='btn-join-game' onClick={() => handleJoin(game.gameID)}>
+        Join Game
+      </button>
+    )}
   </div>
 );
 

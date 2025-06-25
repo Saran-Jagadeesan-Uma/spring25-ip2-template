@@ -6,13 +6,6 @@ import { GameInstance, GameType } from '../types';
 /**
  * Custom hook to manage the state and logic for the "All Games" page, including fetching games,
  * creating a new game, and navigating to game details.
- * @returns An object containing the following:
- * - `availableGames`: The list of available game instances.
- * - `handleJoin`: A function to navigate to the game details page for a selected game.
- * - `fetchGames`: A function to fetch the list of available games.
- * - `isModalOpen`: A boolean indicating whether the game creation modal is open.
- * - `handleToggleModal`: A function to toggle the visibility of the game creation modal.
- * - `handleSelectGameType`: A function to select a game type, create a new game, and close the modal.
  */
 const useAllGamesPage = () => {
   const navigate = useNavigate();
@@ -20,26 +13,38 @@ const useAllGamesPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchGames = async () => {
-    // TODO: Task 2 - Fetch and update the list of available games state
+    try {
+      const games = await getGames(undefined, 'WAITING_TO_START');
+      setAvailableGames(games);
+    } catch (error) {
+      console.error('Failed to fetch games:', error);
+    }
   };
 
   const handleCreateGame = async (gameType: GameType) => {
-    // TODO: Task 2 - Create a new game with the provided type
-    fetchGames(); // Refresh the list after creating a game
+    try {
+      await createGame(gameType);
+      await fetchGames();
+    } catch (error) {
+      console.error('Failed to create game:', error);
+    }
   };
 
   const handleJoin = (gameID: string) => {
     navigate(`/games/${gameID}`);
   };
 
-  // TODO: Task 2 - Implement the `useEffect` hook to fetch the list of available games on component mount
+  useEffect(() => {
+    fetchGames();
+  }, []);
 
   const handleToggleModal = () => {
-    // TODO: Task 2 - Toggle the visibility of the game creation modal
+    setIsModalOpen(prev => !prev);
   };
 
   const handleSelectGameType = (gameType: GameType) => {
-    // TODO: Task 2 - Create a new game with the selected game type and toggle the modal
+    handleCreateGame(gameType);
+    handleToggleModal();
   };
 
   return {
