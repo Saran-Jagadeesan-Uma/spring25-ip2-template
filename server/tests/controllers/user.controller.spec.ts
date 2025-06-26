@@ -348,6 +348,90 @@ describe('Test userController', () => {
       });
     });
 
-    // TODO: Task 1 - Add more tests
+    describe('GET /getUsers', () => {
+      it('should return the users from the database', async () => {
+        getUsersListSpy.mockResolvedValueOnce([mockSafeUser]);
+
+        const response = await supertest(app).get(`/user/getUsers`);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual([mockUserJSONResponse]);
+        expect(getUsersListSpy).toHaveBeenCalled();
+      });
+
+      it('should return 500 if database error occurs while fetching users', async () => {
+        getUsersListSpy.mockResolvedValueOnce({ error: 'DB failure' });
+
+        const response = await supertest(app).get(`/user/getUsers`);
+
+        expect(response.status).toBe(500);
+      });
+    });
+
+    describe('PATCH /updateBiography', () => {
+      it('should successfully update biography given correct arguments', async () => {
+        const mockReqBody = {
+          username: mockUser.username,
+          biography: 'This is my new bio',
+        };
+
+        updatedUserSpy.mockResolvedValueOnce(mockSafeUser);
+
+        const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(mockUserJSONResponse);
+        expect(updatedUserSpy).toHaveBeenCalledWith(mockUser.username, {
+          biography: 'This is my new bio',
+        });
+      });
+
+      it('should return 400 if username is missing', async () => {
+        const mockReqBody = {
+          biography: 'Updated bio',
+        };
+
+        const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+        expect(response.status).toBe(400);
+expect(response.text).toEqual('Both Username and biography are required.');
+      });
+
+      it('should return 400 if biography is missing', async () => {
+        const mockReqBody = {
+          username: mockUser.username,
+        };
+
+        const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+        expect(response.status).toBe(400);
+expect(response.text).toEqual('Both Username and biography are required.');
+      });
+
+      it('should return 400 if biography is empty', async () => {
+        const mockReqBody = {
+          username: mockUser.username,
+          biography: '',
+        };
+
+        const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+        expect(response.status).toBe(400);
+expect(response.text).toEqual('Both Username and biography are required.');
+      });
+
+      it('should return 500 if database error occurs while updating biography', async () => {
+        const mockReqBody = {
+          username: mockUser.username,
+          biography: 'Bio',
+        };
+
+        updatedUserSpy.mockResolvedValueOnce({ error: 'DB error' });
+
+        const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
+
+        expect(response.status).toBe(500);
+      });
+    });
   });
 });
