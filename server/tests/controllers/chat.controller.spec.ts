@@ -30,7 +30,10 @@ describe('Chat Controller', () => {
     // TODO: Task 3 Write additional tests for the createChat endpoint
     it('should create a new chat successfully', async () => {
       const validChatPayload = {
-        participants: ['user1', 'user2'],
+        participants: [
+          new mongoose.Types.ObjectId(),
+          new mongoose.Types.ObjectId(),
+        ],
         messages: [{ msg: 'Hello!', msgFrom: 'user1', msgDateTime: new Date('2025-01-01') }],
       };
 
@@ -44,7 +47,10 @@ describe('Chat Controller', () => {
 
       const chatResponse: Chat = {
         _id: new mongoose.Types.ObjectId(),
-        participants: ['user1', 'user2'],
+        participants: [
+          new mongoose.Types.ObjectId(),
+          new mongoose.Types.ObjectId(),
+        ],
         messages: [
           {
             _id: new mongoose.Types.ObjectId(),
@@ -67,7 +73,7 @@ describe('Chat Controller', () => {
 
       const response = await supertest(app).post('/chat/createChat').send(validChatPayload);
 
-      expect(response.status).toBe(200);
+      expect(response.status).toBe(201);
 
       expect(response.body).toMatchObject({
         _id: chatResponse._id?.toString(),
@@ -117,7 +123,10 @@ describe('Chat Controller', () => {
 
       const chatResponse = {
         _id: chatId,
-        participants: ['user1', 'user2'],
+        participants: [
+          new mongoose.Types.ObjectId(),
+          new mongoose.Types.ObjectId(),
+        ],
         messages: [messageResponse],
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
@@ -161,7 +170,7 @@ describe('Chat Controller', () => {
       // 2) Mock a fully enriched chat
       const mockFoundChat: Chat = {
         _id: new mongoose.Types.ObjectId(),
-        participants: ['user1'],
+        participants: [new mongoose.Types.ObjectId()],
         messages: [
           {
             _id: new mongoose.Types.ObjectId(),
@@ -219,16 +228,19 @@ describe('Chat Controller', () => {
 
       const updatedChat: Chat = {
         _id: new mongoose.Types.ObjectId(),
-        participants: ['user1', 'user2'],
+        participants: [
+          new mongoose.Types.ObjectId(),
+          new mongoose.Types.ObjectId(),
+        ],
         messages: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
       addParticipantSpy.mockResolvedValue(updatedChat);
+      populateDocumentSpy.mockResolvedValue(updatedChat);
 
-      const response = await supertest(app).post(`/chat/${chatId}/addParticipant`).send({ userId });
-
+      const response = await supertest(app).post(`/chat/chats/${chatId}/participants`).send({ participant: userId });
       expect(response.status).toBe(200);
 
       expect(response.body).toMatchObject({
@@ -246,54 +258,66 @@ describe('Chat Controller', () => {
   describe('POST /chat/getChatsByUser/:username', () => {
     it('should return 200 with an array of chats', async () => {
       const username = 'user1';
+
+      const participant1 = new mongoose.Types.ObjectId();
+      const participant2 = new mongoose.Types.ObjectId();
+      const chatId = new mongoose.Types.ObjectId();
+
       const chats: Chat[] = [
         {
-          _id: new mongoose.Types.ObjectId(),
-          participants: ['user1', 'user2'],
+          _id: chatId,
+          participants: [participant1, participant2],
           messages: [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
+
       getChatsByParticipantsSpy.mockResolvedValueOnce(chats);
       populateDocumentSpy.mockResolvedValueOnce(chats[0]);
 
-      const response = await supertest(app).get(`/chat/getChatsByUser/${username}`);
+      const response = await supertest(app).get(`/chat/chats/user/${username}`);
 
       expect(getChatsByParticipantsSpy).toHaveBeenCalledWith([username]);
-      expect(populateDocumentSpy).toHaveBeenCalledWith(chats[0]._id?.toString(), 'chat');
+      expect(populateDocumentSpy).toHaveBeenCalledWith(chatId.toString(), 'chat');
       expect(response.status).toBe(200);
+
       expect(response.body).toMatchObject([
         {
-          _id: chats[0]._id?.toString(),
-          participants: ['user1', 'user2'],
+          _id: chatId.toString(),
+          participants: [participant1.toString(), participant2.toString()],
           messages: [],
-          createdAt: chats[0].createdAt?.toISOString(),
-          updatedAt: chats[0].updatedAt?.toISOString(),
+          createdAt: chats[0].createdAt.toISOString(),
+          updatedAt: chats[0].updatedAt.toISOString(),
         },
       ]);
     });
 
     it('should return 500 if populateDocument fails for any chat', async () => {
       const username = 'user1';
+      const failingChatId = new mongoose.Types.ObjectId();
+      const participantId1 = new mongoose.Types.ObjectId();
+      const participantId2 = new mongoose.Types.ObjectId();
+
       const chats: Chat[] = [
         {
-          _id: new mongoose.Types.ObjectId(),
-          participants: ['user1', 'user2'],
+          _id: failingChatId,
+          participants: [participantId1, participantId2],
           messages: [],
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       ];
-      getChatsByParticipantsSpy.mockResolvedValueOnce(chats);
-      populateDocumentSpy.mockResolvedValueOnce({ error: 'Service error' });
 
-      const response = await supertest(app).get(`/chat/getChatsByUser/${username}`);
+      getChatsByParticipantsSpy.mockResolvedValueOnce(chats);
+      populateDocumentSpy.mockRejectedValueOnce(new Error('Populate failed'));
+
+      const response = await supertest(app).get(`/chat/chats/user/${username}`);
 
       expect(getChatsByParticipantsSpy).toHaveBeenCalledWith([username]);
-      expect(populateDocumentSpy).toHaveBeenCalledWith(chats[0]._id?.toString(), 'chat');
+      expect(populateDocumentSpy).toHaveBeenCalledWith(failingChatId.toString(), 'chat');
       expect(response.status).toBe(500);
-      expect(response.text).toBe('Error retrieving chat: Failed populating chats');
+      expect(response.body).toMatchObject({ error: 'Failed to retrieve chats' });
     });
   });
 });

@@ -151,21 +151,30 @@ const chatController = (socket: FakeSOSocket) => {
     }
   };
 
-  const getChatsByUserRoute = async (
-    req: GetChatByParticipantsRequest,
-    res: Response,
-  ): Promise<void> => {
-    try {
-      const chats = await getChatsByParticipants([req.params.username]);
-      const populatedChats = await Promise.all(
-        chats.map(chat => populateDocument(chat._id.toString(), 'chat')),
-      );
-      res.status(200).json(populatedChats);
-    } catch (err) {
-      console.error('[getChatsByUserRoute] ❌ Failed to retrieve chats:', err);
-      res.status(500).json({ error: 'Failed to retrieve chats' });
+ const getChatsByUserRoute = async (
+  req: GetChatByParticipantsRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    const chats = await getChatsByParticipants([req.params.username]);
+    const populatedChats = await Promise.all(
+      chats.map(chat => populateDocument(chat._id.toString(), 'chat')),
+    );
+
+    const hasError = populatedChats.some(chat => (chat as any)?.error);
+    if (hasError) {
+      console.error('[getChatsByUserRoute] ❌ Error populating some chats');
+      res.status(500).send('Error retrieving chat: Failed populating chats');
+      return;
     }
-  };
+
+    res.status(200).json(populatedChats);
+  } catch (err) {
+    console.error('[getChatsByUserRoute] ❌ Failed to retrieve chats:', err);
+    res.status(500).json({ error: 'Failed to retrieve chats' });
+  }
+};
+
 
   const addParticipantToChatRoute = async (
     req: AddParticipantRequest,
