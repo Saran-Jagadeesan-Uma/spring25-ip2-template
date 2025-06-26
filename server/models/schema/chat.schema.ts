@@ -12,7 +12,7 @@ const chatSchema = new Schema(
     participants: [{ type: Schema.Types.ObjectId, ref: 'User', required: true }],
     messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default chatSchema;

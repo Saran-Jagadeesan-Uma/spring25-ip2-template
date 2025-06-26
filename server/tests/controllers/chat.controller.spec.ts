@@ -30,10 +30,7 @@ describe('Chat Controller', () => {
     // TODO: Task 3 Write additional tests for the createChat endpoint
     it('should create a new chat successfully', async () => {
       const validChatPayload = {
-        participants: [
-          new mongoose.Types.ObjectId(),
-          new mongoose.Types.ObjectId(),
-        ],
+        participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
         messages: [{ msg: 'Hello!', msgFrom: 'user1', msgDateTime: new Date('2025-01-01') }],
       };
 
@@ -47,10 +44,7 @@ describe('Chat Controller', () => {
 
       const chatResponse: Chat = {
         _id: new mongoose.Types.ObjectId(),
-        participants: [
-          new mongoose.Types.ObjectId(),
-          new mongoose.Types.ObjectId(),
-        ],
+        participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
         messages: [
           {
             _id: new mongoose.Types.ObjectId(),
@@ -123,10 +117,7 @@ describe('Chat Controller', () => {
 
       const chatResponse = {
         _id: chatId,
-        participants: [
-          new mongoose.Types.ObjectId(),
-          new mongoose.Types.ObjectId(),
-        ],
+        participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
         messages: [messageResponse],
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-01'),
@@ -228,10 +219,7 @@ describe('Chat Controller', () => {
 
       const updatedChat: Chat = {
         _id: new mongoose.Types.ObjectId(),
-        participants: [
-          new mongoose.Types.ObjectId(),
-          new mongoose.Types.ObjectId(),
-        ],
+        participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
         messages: [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -240,7 +228,9 @@ describe('Chat Controller', () => {
       addParticipantSpy.mockResolvedValue(updatedChat);
       populateDocumentSpy.mockResolvedValue(updatedChat);
 
-      const response = await supertest(app).post(`/chat/chats/${chatId}/participants`).send({ participant: userId });
+      const response = await supertest(app)
+        .post(`/chat/chats/${chatId}/participants`)
+        .send({ participant: userId });
       expect(response.status).toBe(200);
 
       expect(response.body).toMatchObject({

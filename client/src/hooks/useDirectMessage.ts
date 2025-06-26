@@ -110,7 +110,7 @@ const useDirectMessage = () => {
         socket.emit('leaveChat', selectedChat._id.toString());
       }
     };
-  }, [user.username, socket, selectedChat?._id]);
+  }, [user._id, user.username, socket, selectedChat?._id]);
 
   return {
     selectedChat,

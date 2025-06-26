@@ -394,7 +394,7 @@ describe('Test userController', () => {
         const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
 
         expect(response.status).toBe(400);
-expect(response.text).toEqual('Both Username and biography are required.');
+        expect(response.text).toEqual('Both Username and biography are required.');
       });
 
       it('should return 400 if biography is missing', async () => {
@@ -405,7 +405,7 @@ expect(response.text).toEqual('Both Username and biography are required.');
         const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
 
         expect(response.status).toBe(400);
-expect(response.text).toEqual('Both Username and biography are required.');
+        expect(response.text).toEqual('Both Username and biography are required.');
       });
 
       it('should return 400 if biography is empty', async () => {
@@ -417,7 +417,7 @@ expect(response.text).toEqual('Both Username and biography are required.');
         const response = await supertest(app).patch('/user/updateBiography').send(mockReqBody);
 
         expect(response.status).toBe(400);
-expect(response.text).toEqual('Both Username and biography are required.');
+        expect(response.text).toEqual('Both Username and biography are required.');
       });
 
       it('should return 500 if database error occurs while updating biography', async () => {

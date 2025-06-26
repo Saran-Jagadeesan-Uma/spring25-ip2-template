@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ChatModel from '../models/chat.model';
 import MessageModel from '../models/messages.model';
 import UserModel from '../models/users.model';
@@ -10,7 +11,6 @@ import { Message, MessageResponse } from '../types/message';
  * @param chat - The chat object to be saved, including full message objects.
  * @returns {Promise<ChatResponse>} - Resolves with the saved chat or an error message.
  */
-import mongoose from 'mongoose';
 
 export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResponse> => {
   try {
