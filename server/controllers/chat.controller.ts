@@ -59,7 +59,6 @@ const chatController = (socket: FakeSOSocket) => {
   };
 
   const createChatRoute = async (req: CreateChatRequest, res: Response): Promise<void> => {
-
     if (!isCreateChatRequestValid(req)) {
       res.status(400).json({ error: 'Invalid chat creation request' });
       return;
@@ -149,7 +148,9 @@ const chatController = (socket: FakeSOSocket) => {
         chats.map(chat => populateDocument(chat._id.toString(), 'chat')),
       );
 
-      const hasError = populatedChats.some(chat => (chat as { error?: string }).error !== undefined);
+      const hasError = populatedChats.some(
+        chat => (chat as { error?: string }).error !== undefined,
+      );
       if (hasError) {
         res.status(500).send('Error retrieving chat: Failed populating chats');
         return;

@@ -3,8 +3,6 @@ import supertest from 'supertest';
 import { app } from '../../app';
 import * as chatService from '../../services/chat.service';
 import * as databaseUtil from '../../utils/database.util';
-import MessageModel from '../../models/messages.model';
-import ChatModel from '../../models/chat.model';
 import { Chat } from '../../types/chat';
 import { Message } from '../../types/message';
 
@@ -18,9 +16,6 @@ const getChatSpy = jest.spyOn(chatService, 'getChat');
 const addParticipantSpy = jest.spyOn(chatService, 'addParticipantToChat');
 const populateDocumentSpy = jest.spyOn(databaseUtil, 'populateDocument');
 const getChatsByParticipantsSpy = jest.spyOn(chatService, 'getChatsByParticipants');
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const mockingoose = require('mockingoose');
 
 /**
  * Sample test suite for the /chat endpoints
