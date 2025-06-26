@@ -10,6 +10,8 @@ import { Message, MessageResponse } from '../types/message';
  * @param chat - The chat object to be saved, including full message objects.
  * @returns {Promise<ChatResponse>} - Resolves with the saved chat or an error message.
  */
+import mongoose from 'mongoose';
+
 export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResponse> => {
   try {
     const messageIds = [];
@@ -22,25 +24,26 @@ export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResp
       messageIds.push(...savedMessages.map(m => m._id));
     }
 
-    const users = await UserModel.find({ username: { $in: chatPayload.participants } });
+    // Convert string IDs to ObjectIds
+    const participantIds = chatPayload.participants.map(id => new mongoose.Types.ObjectId(id));
 
-    if (users.length !== chatPayload.participants.length) {
+    const users = await UserModel.find({ _id: { $in: participantIds } });
+
+    if (users.length !== participantIds.length) {
       return { error: 'Some users not found' };
     }
 
-    const userIds = users.map(u => u._id);
-
-    const newChat = new ChatModel({
-      participants: userIds,
+    const newChat = await ChatModel.create({
+      participants: participantIds,
       messages: messageIds,
     });
 
-    const savedChat = await newChat.save();
-    return savedChat;
+    return newChat.toObject();
   } catch (err) {
     return { error: 'Failed to save chat' };
   }
 };
+
 /**
  * Creates and saves a new message document in the database.
  * @param messageData - The message data to be created.

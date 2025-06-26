@@ -4,6 +4,7 @@ import useDirectMessage from '../../../hooks/useDirectMessage';
 import ChatsListCard from './chatsListCard';
 import UsersListPage from '../usersListPage';
 import MessageCard from '../messageCard';
+import { User } from '../../../types';
 
 /**
  * DirectMessage component renders a page for direct messaging between users.
@@ -34,7 +35,7 @@ const DirectMessage = () => {
         </button>
         {showCreatePanel && (
           <>
-            <p>Selected User: {chatToCreate}</p>
+            <p>Selected User: {chatToCreate?.username}</p>
             <button className='custom-button' onClick={handleCreateChat}>
               Create Chat
             </button>
@@ -55,7 +56,14 @@ const DirectMessage = () => {
         <div className='chat-container'>
           {selectedChat ? (
             <>
-              <h2>Chat Participants: {selectedChat.participants.join(', ')}</h2>
+              <h2>
+                Chat Participants:{' '}
+                {selectedChat.participants
+                  .filter(p => typeof p === 'object' && 'username' in p)
+                  .map(p => (p as User).username)
+                  .join(', ')}
+              </h2>
+
               <div className='chat-messages'>
                 {selectedChat.messages.map(msg => (
                   <MessageCard key={msg._id?.toString()} message={msg} />

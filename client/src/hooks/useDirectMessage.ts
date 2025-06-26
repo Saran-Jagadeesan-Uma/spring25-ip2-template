@@ -3,14 +3,10 @@ import { Chat, ChatUpdatePayload, User } from '../types';
 import useUserContext from './useUserContext';
 import { createChat, getChatById, getChatsByUser, sendMessage } from '../services/chatService';
 
-/**
- * useDirectMessage is a custom hook that provides state and functions for direct messaging between users.
- * It includes a selected user, messages, and a new message state.
- */
 const useDirectMessage = () => {
   const { user, socket } = useUserContext();
   const [showCreatePanel, setShowCreatePanel] = useState<boolean>(false);
-  const [chatToCreate, setChatToCreate] = useState<string>('');
+  const [chatToCreate, setChatToCreate] = useState<User | null>(null);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [chats, setChats] = useState<Chat[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -20,15 +16,17 @@ const useDirectMessage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!selectedChat || newMessage.trim() === '') return;
+    if (!selectedChat || !selectedChat._id || !user || !user._id || newMessage.trim() === '') {
+      return;
+    }
 
     const result = await sendMessage(
       {
         msg: newMessage,
-        msgFrom: user.username,
+        msgFrom: user._id.toString(),
         msgDateTime: new Date(),
       },
-      selectedChat._id?.toString() ?? '',
+      selectedChat._id.toString(),
     );
 
     if ('error' in result) return;
@@ -55,13 +53,13 @@ const useDirectMessage = () => {
   };
 
   const handleUserSelect = (selectedUser: User) => {
-    setChatToCreate(selectedUser.username);
+    setChatToCreate(selectedUser);
   };
 
   const handleCreateChat = async () => {
-    if (!chatToCreate) return;
+    if (!chatToCreate || !chatToCreate._id || !user || !user._id) return;
 
-    const result = await createChat([user.username, chatToCreate]);
+    const result = await createChat([user._id.toString(), chatToCreate._id.toString()]);
 
     if ('error' in result) return;
 
@@ -72,12 +70,13 @@ const useDirectMessage = () => {
     setSelectedChat(result);
     handleJoinChat(result._id.toString());
     setShowCreatePanel(false);
-    setChatToCreate('');
+    setChatToCreate(null);
   };
 
   useEffect(() => {
     const fetchChats = async () => {
-      const result = await getChatsByUser(user.username);
+      if (!user._id) return;
+      const result = await getChatsByUser(user._id.toString());
       if (!('error' in result)) setChats(result);
     };
 
@@ -99,8 +98,6 @@ const useDirectMessage = () => {
           }
           return prev;
         });
-      } else {
-        throw new Error('Invalid chat update type');
       }
     };
 
@@ -109,7 +106,6 @@ const useDirectMessage = () => {
 
     return () => {
       socket.off('chatUpdate', handleChatUpdate);
-
       if (selectedChat?._id) {
         socket.emit('leaveChat', selectedChat._id.toString());
       }
