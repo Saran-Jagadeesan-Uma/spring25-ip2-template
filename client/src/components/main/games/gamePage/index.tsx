@@ -21,9 +21,12 @@ const GamePage = () => {
    * fallback message for unknown types.
    */
   const renderGameComponent = (gameType: string) => {
-    // TODO: Task 2 - Implement a switch-case statement to render the appropriate
-    // game component based on the game type. Use a default <div> element to display
-    // a message for unknown game types.
+    switch (gameType) {
+      case 'Nim':
+        return <NimGamePage gameState={gameState!} />;
+      default:
+        return <div>Unknown game type: {gameType}</div>;
+    }
   };
 
   return (
@@ -34,14 +37,12 @@ const GamePage = () => {
       </header>
 
       <div className='game-controls'>
-        {/* TODO: Task 2 - Add a button that leaves the game on click.
-        Use the class name 'btn-leave-game' for styling. */}
+        <button className='btn-leave-game' onClick={handleLeaveGame}>
+          Leave Game
+        </button>
       </div>
-
-      {/* TODO: Task 2 - Conditionally render the correct game component based on the type */}
-
-      {/* Conditionally render an error message if an error occurs.
-      Use a <div> element with the class name 'game-error' for styling. */}
+      {gameState && renderGameComponent(gameState.gameType)}
+      {error && <div className='game-error'>{error}</div>}
     </div>
   );
 };
