@@ -122,7 +122,6 @@ const chatController = (socket: FakeSOSocket) => {
     req: AddMessageRequestToChat,
     res: Response,
   ): Promise<void> => {
-
     if (!isAddMessageRequestValid(req)) {
       res.status(400).json({ error: 'Invalid message request' });
       return;
@@ -225,7 +224,7 @@ const chatController = (socket: FakeSOSocket) => {
     try {
       const updated = await addParticipantToChat(
         req.params.chatId,
-        req.body.participant.toString(), 
+        req.body.participant.toString(),
       );
       if ('error' in updated) {
         res.status(500).json(updated);

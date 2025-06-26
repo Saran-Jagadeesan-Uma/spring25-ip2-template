@@ -88,7 +88,6 @@ describe('Chat Controller', () => {
       expect(saveChatSpy).toHaveBeenCalledWith(serializedPayload);
       expect(populateDocumentSpy).toHaveBeenCalledWith(chatResponse._id?.toString(), 'chat');
     });
-
   });
 
   describe('POST /chat/:chatId/addMessage', () => {
@@ -151,7 +150,6 @@ describe('Chat Controller', () => {
       expect(addMessageSpy).toHaveBeenCalledWith(chatId.toString(), messageResponse._id.toString());
       expect(populateDocumentSpy).toHaveBeenCalledWith(chatResponse._id.toString(), 'chat');
     });
-
   });
 
   describe('GET /chat/:chatId', () => {
@@ -243,7 +241,6 @@ describe('Chat Controller', () => {
 
       expect(addParticipantSpy).toHaveBeenCalledWith(chatId, userId);
     });
-
   });
 
   describe('POST /chat/getChatsByUser/:username', () => {

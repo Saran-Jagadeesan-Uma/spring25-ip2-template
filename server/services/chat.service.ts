@@ -46,16 +46,15 @@ export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResp
  * @param messageData - The message data to be created.
  * @returns {Promise<MessageResponse>} - Resolves with the created message or an error message.
  */
-export const createMessage = async (messageData: Message): Promise<MessageResponse> =>
-  {
-    try {
-      const message = new MessageModel(messageData);
-      const savedMessage = await message.save();
-      return savedMessage;
-    } catch (err) {
-      return { error: 'Failed to create message' };
-    }
-  };
+export const createMessage = async (messageData: Message): Promise<MessageResponse> => {
+  try {
+    const message = new MessageModel(messageData);
+    const savedMessage = await message.save();
+    return savedMessage;
+  } catch (err) {
+    return { error: 'Failed to create message' };
+  }
+};
 
 /**
  * Adds a message ID to an existing chat.
@@ -63,36 +62,37 @@ export const createMessage = async (messageData: Message): Promise<MessageRespon
  * @param messageId - The ID of the message to add to the chat.
  * @returns {Promise<ChatResponse>} - Resolves with the updated chat object or an error message.
  */
-export const addMessageToChat = async (chatId: string, messageId: string): Promise<ChatResponse> =>
-  {
-    try {
-      const updatedChat = await ChatModel.findByIdAndUpdate(
-        chatId,
-        { $push: { messages: messageId } },
-        { new: true },
-      );
-      if (!updatedChat) return { error: 'Chat not found' };
-      return updatedChat;
-    } catch (err) {
-      return { error: 'Failed to add message to chat' };
-    }
-  };
+export const addMessageToChat = async (
+  chatId: string,
+  messageId: string,
+): Promise<ChatResponse> => {
+  try {
+    const updatedChat = await ChatModel.findByIdAndUpdate(
+      chatId,
+      { $push: { messages: messageId } },
+      { new: true },
+    );
+    if (!updatedChat) return { error: 'Chat not found' };
+    return updatedChat;
+  } catch (err) {
+    return { error: 'Failed to add message to chat' };
+  }
+};
 
 /**
  * Retrieves a chat document by its ID.
  * @param chatId - The ID of the chat to retrieve.
  * @returns {Promise<ChatResponse>} - Resolves with the found chat object or an error message.
  */
-export const getChat = async (chatId: string): Promise<ChatResponse> =>
-  {
-    try {
-      const chat = await ChatModel.findById(chatId);
-      if (!chat) return { error: 'Chat not found' };
-      return chat;
-    } catch (err) {
-      return { error: 'Failed to get chat' };
-    }
-  };
+export const getChat = async (chatId: string): Promise<ChatResponse> => {
+  try {
+    const chat = await ChatModel.findById(chatId);
+    if (!chat) return { error: 'Chat not found' };
+    return chat;
+  } catch (err) {
+    return { error: 'Failed to get chat' };
+  }
+};
 
 /**
  * Retrieves chats that include all the provided participants.
@@ -100,15 +100,14 @@ export const getChat = async (chatId: string): Promise<ChatResponse> =>
  * @returns {Promise<Chat[]>} A promise that resolves to an array of chats where the participants match.
  * If no chats are found or an error occurs, the promise resolves to an empty array.
  */
-export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> =>
-  {
-    try {
-      const chats = await ChatModel.find({ participants: { $all: p } });
-      return chats;
-    } catch (err) {
-      return [];
-    }
-  };
+export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> => {
+  try {
+    const chats = await ChatModel.find({ participants: { $all: p } });
+    return chats;
+  } catch (err) {
+    return [];
+  }
+};
 
 /**
  * Adds a participant to an existing chat.
@@ -117,17 +116,19 @@ export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> =>
  * @param userId - The ID of the user to add to the chat.
  * @returns {Promise<ChatResponse>} - Resolves with the updated chat object or an error message.
  */
-export const addParticipantToChat = async (chatId: string, userId: string): Promise<ChatResponse> =>
-  {
-    try {
-      const updatedChat = await ChatModel.findByIdAndUpdate(
-        chatId,
-        { $addToSet: { participants: userId } },
-        { new: true },
-      );
-      if (!updatedChat) return { error: 'Chat not found' };
-      return updatedChat;
-    } catch (err) {
-      return { error: 'Failed to add participant to chat' };
-    }
-  };
+export const addParticipantToChat = async (
+  chatId: string,
+  userId: string,
+): Promise<ChatResponse> => {
+  try {
+    const updatedChat = await ChatModel.findByIdAndUpdate(
+      chatId,
+      { $addToSet: { participants: userId } },
+      { new: true },
+    );
+    if (!updatedChat) return { error: 'Chat not found' };
+    return updatedChat;
+  } catch (err) {
+    return { error: 'Failed to add participant to chat' };
+  }
+};

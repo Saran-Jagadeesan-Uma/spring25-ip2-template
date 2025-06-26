@@ -29,7 +29,6 @@ describe('Chat service', () => {
   describe('saveChat', () => {
     // TODO: Task 3 - Write tests for the saveChat function
 
-
     it('should successfully save a chat and verify its body (ignore exact IDs)', async () => {
       // 2) Mock message creation
       mockingoose(MessageModel).toReturn(
@@ -136,7 +135,6 @@ describe('Chat service', () => {
       expect(result.messages).toEqual(mockUpdatedChat.messages);
     });
   });
-
 
   // ----------------------------------------------------------------------------
   // 5. addParticipantToChat
