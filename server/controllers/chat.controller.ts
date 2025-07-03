@@ -1,5 +1,4 @@
 import express, { Response } from 'express';
-import { isValidObjectId } from 'mongoose';
 import {
   saveChat,
   createMessage,
@@ -19,6 +18,7 @@ import {
 import { FakeSOSocket } from '../types/socket';
 import ChatModel from '../models/chat.model';
 import { Message } from '../types/message';
+import { isValidObjectId } from 'mongoose';
 
 const chatController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -27,7 +27,7 @@ const chatController = (socket: FakeSOSocket) => {
     const { participants, messages } = req.body;
     if (!Array.isArray(participants) || participants.length < 2) return false;
 
-    const validParticipants = participants.every(p => typeof p === 'string' && isValidObjectId(p));
+    const validParticipants = participants.every(p => typeof p === 'string');
 
     const validMessages =
       !messages ||
@@ -45,17 +45,27 @@ const chatController = (socket: FakeSOSocket) => {
 
   const isAddMessageRequestValid = (req: AddMessageRequestToChat): boolean => {
     const { msg, msgFrom, msgDateTime } = req.body;
+    const { chatId } = req.params;
+
+    const hasChatId = typeof chatId === 'string' && isValidObjectId(chatId);
     const hasMsg = typeof msg === 'string' && msg.trim().length > 0;
     const hasSender = typeof msgFrom === 'string';
     const hasValidDate =
       msgDateTime === undefined || !Number.isNaN(new Date(msgDateTime).getTime());
 
-    return hasMsg && hasSender && hasValidDate;
+    return hasChatId && hasMsg && hasSender && hasValidDate;
   };
 
   const isAddParticipantRequestValid = (req: AddParticipantRequest): boolean => {
     const { participant } = req.body;
-    return typeof participant === 'string' && isValidObjectId(participant);
+    const { chatId } = req.params;
+
+    return (
+      typeof participant === 'string' &&
+      typeof chatId === 'string' &&
+      isValidObjectId(chatId) &&
+      isValidObjectId(participant)
+    );
   };
 
   const createChatRoute = async (req: CreateChatRequest, res: Response): Promise<void> => {
@@ -98,7 +108,7 @@ const chatController = (socket: FakeSOSocket) => {
     try {
       const messagePayload: Message = {
         msg: req.body.msg,
-        msgFrom: req.body.msgFrom.toString(),
+        msgFrom: req.body.msgFrom,
         msgDateTime: req.body.msgDateTime ? new Date(req.body.msgDateTime) : new Date(),
         type: 'direct',
       };
@@ -174,7 +184,7 @@ const chatController = (socket: FakeSOSocket) => {
     try {
       const updated = await addParticipantToChat(
         req.params.chatId,
-        req.body.participant.toString(),
+        req.body.participant.toString()
       );
       if ('error' in updated) {
         res.status(500).json(updated);

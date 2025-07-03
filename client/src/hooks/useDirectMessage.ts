@@ -16,14 +16,14 @@ const useDirectMessage = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!selectedChat || !selectedChat._id || !user || !user._id || newMessage.trim() === '') {
+    if (!selectedChat || !selectedChat._id || !user?.username || newMessage.trim() === '') {
       return;
     }
 
     const result = await sendMessage(
       {
         msg: newMessage,
-        msgFrom: user._id.toString(),
+        msgFrom: user.username,
         msgDateTime: new Date(),
       },
       selectedChat._id.toString(),
@@ -31,15 +31,7 @@ const useDirectMessage = () => {
 
     if ('error' in result) return;
 
-    setSelectedChat(prev =>
-      prev
-        ? {
-            ...prev,
-            messages: [...prev.messages, result],
-            updatedAt: new Date(),
-          }
-        : prev,
-    );
+    setSelectedChat(result);
     setNewMessage('');
   };
 
@@ -57,9 +49,9 @@ const useDirectMessage = () => {
   };
 
   const handleCreateChat = async () => {
-    if (!chatToCreate || !chatToCreate._id || !user || !user._id) return;
+    if (!chatToCreate?.username || !user?.username) return;
 
-    const result = await createChat([user._id.toString(), chatToCreate._id.toString()]);
+    const result = await createChat([user.username, chatToCreate.username]);
 
     if ('error' in result) return;
 
@@ -75,8 +67,8 @@ const useDirectMessage = () => {
 
   useEffect(() => {
     const fetchChats = async () => {
-      if (!user._id) return;
-      const result = await getChatsByUser(user._id.toString());
+      if (!user?.username) return;
+      const result = await getChatsByUser(user.username);
       if (!('error' in result)) setChats(result);
     };
 
@@ -110,7 +102,7 @@ const useDirectMessage = () => {
         socket.emit('leaveChat', selectedChat._id.toString());
       }
     };
-  }, [user._id, user.username, socket, selectedChat?._id]);
+  }, [user?.username, socket, selectedChat?._id]);
 
   return {
     selectedChat,

@@ -11,7 +11,7 @@ import { Request } from 'express';
 export interface Message {
   _id?: ObjectId;
   msg: string;
-  msgFrom: string;
+  msgFrom: string | ObjectId; 
   msgDateTime: Date;
   type: 'global' | 'direct';
 }

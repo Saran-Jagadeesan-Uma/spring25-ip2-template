@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import ChatModel from '../models/chat.model';
 import MessageModel from '../models/messages.model';
 import UserModel from '../models/users.model';
@@ -6,32 +5,31 @@ import { Chat, ChatResponse, CreateChatPayload } from '../types/chat';
 import { Message, MessageResponse } from '../types/message';
 
 /**
- * Creates and saves a new chat document in the database, saving messages dynamically.
- *
- * @param chat - The chat object to be saved, including full message objects.
- * @returns {Promise<ChatResponse>} - Resolves with the saved chat or an error message.
+ * Creates and saves a new chat document in the database, resolving usernames to ObjectIds.
  */
-
 export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResponse> => {
   try {
     const messageIds = [];
 
     if (chatPayload.messages && Array.isArray(chatPayload.messages)) {
       const messageDocs = chatPayload.messages.map(msg =>
-        new MessageModel({ ...msg, type: 'direct' }).save(),
+        new MessageModel({
+          ...msg,
+          type: 'direct',
+        }).save(),
       );
+
       const savedMessages = await Promise.all(messageDocs);
-      messageIds.push(...savedMessages.map(m => m._id));
+      messageIds.push(...savedMessages.map(m => m._id.toString()));
     }
 
-    // Convert string IDs to ObjectIds
-    const participantIds = chatPayload.participants.map(id => new mongoose.Types.ObjectId(id));
+    const users = await UserModel.find({ username: { $in: chatPayload.participants } });
 
-    const users = await UserModel.find({ _id: { $in: participantIds } });
-
-    if (users.length !== participantIds.length) {
+    if (users.length !== chatPayload.participants.length) {
       return { error: 'Some users not found' };
     }
+
+    const participantIds = users.map(user => user._id.toString());
 
     const newChat = await ChatModel.create({
       participants: participantIds,
@@ -46,8 +44,6 @@ export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResp
 
 /**
  * Creates and saves a new message document in the database.
- * @param messageData - The message data to be created.
- * @returns {Promise<MessageResponse>} - Resolves with the created message or an error message.
  */
 export const createMessage = async (messageData: Message): Promise<MessageResponse> => {
   try {
@@ -61,9 +57,6 @@ export const createMessage = async (messageData: Message): Promise<MessageRespon
 
 /**
  * Adds a message ID to an existing chat.
- * @param chatId - The ID of the chat to update.
- * @param messageId - The ID of the message to add to the chat.
- * @returns {Promise<ChatResponse>} - Resolves with the updated chat object or an error message.
  */
 export const addMessageToChat = async (
   chatId: string,
@@ -84,8 +77,6 @@ export const addMessageToChat = async (
 
 /**
  * Retrieves a chat document by its ID.
- * @param chatId - The ID of the chat to retrieve.
- * @returns {Promise<ChatResponse>} - Resolves with the found chat object or an error message.
  */
 export const getChat = async (chatId: string): Promise<ChatResponse> => {
   try {
@@ -98,14 +89,13 @@ export const getChat = async (chatId: string): Promise<ChatResponse> => {
 };
 
 /**
- * Retrieves chats that include all the provided participants.
- * @param p An array of participant usernames to match in the chat's participants.
- * @returns {Promise<Chat[]>} A promise that resolves to an array of chats where the participants match.
- * If no chats are found or an error occurs, the promise resolves to an empty array.
+ * Retrieves chats that include all the provided participant usernames.
  */
-export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> => {
+export const getChatsByParticipants = async (usernames: string[]): Promise<Chat[]> => {
   try {
-    const chats = await ChatModel.find({ participants: { $all: p } });
+    const users = await UserModel.find({ username: { $in: usernames } });
+    const userIds = users.map(user => user._id);
+    const chats = await ChatModel.find({ participants: { $all: userIds } });
     return chats;
   } catch (err) {
     return [];
@@ -113,11 +103,7 @@ export const getChatsByParticipants = async (p: string[]): Promise<Chat[]> => {
 };
 
 /**
- * Adds a participant to an existing chat.
- *
- * @param chatId - The ID of the chat to update.
- * @param userId - The ID of the user to add to the chat.
- * @returns {Promise<ChatResponse>} - Resolves with the updated chat object or an error message.
+ * Adds a participant (by ObjectId string) to an existing chat.
  */
 export const addParticipantToChat = async (
   chatId: string,
@@ -129,6 +115,7 @@ export const addParticipantToChat = async (
       { $addToSet: { participants: userId } },
       { new: true },
     );
+
     if (!updatedChat) return { error: 'Chat not found' };
     return updatedChat;
   } catch (err) {
