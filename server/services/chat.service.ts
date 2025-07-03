@@ -47,6 +47,11 @@ export const saveChat = async (chatPayload: CreateChatPayload): Promise<ChatResp
  */
 export const createMessage = async (messageData: Message): Promise<MessageResponse> => {
   try {
+    const user = await UserModel.findOne({ username: messageData.msgFrom });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
     const message = new MessageModel(messageData);
     const savedMessage = await message.save();
     return savedMessage;
@@ -54,6 +59,7 @@ export const createMessage = async (messageData: Message): Promise<MessageRespon
     return { error: 'Failed to create message' };
   }
 };
+
 
 /**
  * Adds a message ID to an existing chat.

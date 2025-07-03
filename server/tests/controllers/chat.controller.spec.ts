@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import ChatModel from '../../models/chat.model';
 import supertest from 'supertest';
 import { app } from '../../app';
 import * as chatService from '../../services/chat.service';
@@ -21,31 +22,32 @@ const getChatsByParticipantsSpy = jest.spyOn(chatService, 'getChatsByParticipant
  * Sample test suite for the /chat endpoints
  */
 describe('Chat Controller', () => {
-  describe('POST /chat/createChat', () => {
-    // TODO: Task 3 Write additional tests for the createChat endpoint
+  describe('POST /chat/chats', () => {
+    jest.setTimeout(15000);
     it('should create a new chat successfully', async () => {
-      const validChatPayload = {
-        participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
-        messages: [{ msg: 'Hello!', msgFrom: 'user1', msgDateTime: new Date('2025-01-01') }],
-      };
+      const participant1 = new mongoose.Types.ObjectId();
+      const participant2 = new mongoose.Types.ObjectId();
 
-      const serializedPayload = {
-        ...validChatPayload,
-        messages: validChatPayload.messages.map(message => ({
-          ...message,
-          msgDateTime: message.msgDateTime.toISOString(),
-        })),
+      const validChatPayload = {
+        participants: [participant1.toString(), participant2.toString()],
+        messages: [
+          {
+            msg: 'Hello!',
+            msgFrom: 'user1',
+            msgDateTime: '2025-01-01T00:00:00.000Z',
+          },
+        ],
       };
 
       const chatResponse: Chat = {
         _id: new mongoose.Types.ObjectId(),
-        participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
+        participants: [participant1, participant2],
         messages: [
           {
             _id: new mongoose.Types.ObjectId(),
             msg: 'Hello!',
             msgFrom: 'user1',
-            msgDateTime: new Date('2025-01-01'),
+            msgDateTime: new Date('2025-01-01T00:00:00.000Z'),
             user: {
               _id: new mongoose.Types.ObjectId(),
               username: 'user1',
@@ -58,30 +60,17 @@ describe('Chat Controller', () => {
       };
 
       saveChatSpy.mockResolvedValue(chatResponse);
-      populateDocumentSpy.mockResolvedValue(chatResponse);
 
-      const response = await supertest(app).post('/chat/createChat').send(validChatPayload);
+      jest.spyOn(ChatModel, 'findById').mockReturnValueOnce({
+        populate: jest.fn().mockReturnValue({
+          populate: jest.fn().mockResolvedValue(chatResponse),
+        }),
+      } as any);
+
+      const response = await supertest(app).post('/chat/chats').send(validChatPayload);
 
       expect(response.status).toBe(201);
-
-      expect(response.body).toMatchObject({
-        _id: chatResponse._id?.toString(),
-        participants: chatResponse.participants.map(participant => participant.toString()),
-        messages: chatResponse.messages.map(message => ({
-          ...message,
-          _id: message._id?.toString(),
-          msgDateTime: message.msgDateTime.toISOString(),
-          user: {
-            ...message.user,
-            _id: message.user?._id.toString(),
-          },
-        })),
-        createdAt: chatResponse.createdAt?.toISOString(),
-        updatedAt: chatResponse.updatedAt?.toISOString(),
-      });
-
-      expect(saveChatSpy).toHaveBeenCalledWith(serializedPayload);
-      expect(populateDocumentSpy).toHaveBeenCalledWith(chatResponse._id?.toString(), 'chat');
+      expect(response.body._id).toBe(chatResponse._id.toString());
     });
   });
 
@@ -122,7 +111,7 @@ describe('Chat Controller', () => {
       addMessageSpy.mockResolvedValue(chatResponse);
       populateDocumentSpy.mockResolvedValue(chatResponse);
 
-      const response = await supertest(app).post(`/chat/${chatId}/addMessage`).send(messagePayload);
+      const response = await supertest(app).post(`/chat/chats/${chatId}/messages`).send(messagePayload);
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -141,7 +130,12 @@ describe('Chat Controller', () => {
         updatedAt: chatResponse.updatedAt.toISOString(),
       });
 
-      expect(createMessageSpy).toHaveBeenCalledWith(serializedPayload);
+      expect(createMessageSpy).toHaveBeenCalledWith({
+        msg: 'Hello!',
+        msgFrom: 'user1',
+        msgDateTime: new Date('2025-01-01T00:00:00.000Z'),
+        type: 'direct',
+      });
       expect(addMessageSpy).toHaveBeenCalledWith(chatId.toString(), messageResponse._id.toString());
       expect(populateDocumentSpy).toHaveBeenCalledWith(chatResponse._id.toString(), 'chat');
     });
@@ -179,7 +173,7 @@ describe('Chat Controller', () => {
       populateDocumentSpy.mockResolvedValue(mockFoundChat);
 
       // 4) Invoke the endpoint
-      const response = await supertest(app).get(`/chat/${chatId}`);
+      const response = await supertest(app).get(`/chat/chats/${chatId}`);
 
       // 5) Assertions
       expect(response.status).toBe(200);

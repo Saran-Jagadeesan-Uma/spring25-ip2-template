@@ -217,7 +217,6 @@ const chatController = (socket: FakeSOSocket) => {
   router.get('/chats/user/:username', getChatsByUserRoute);
   router.post('/chats/:chatId/messages', addMessageToChatRoute);
   router.post('/chats/:chatId/participants', addParticipantToChatRoute);
-  router.post('/createChat', createChatRoute);
 
   return router;
 };

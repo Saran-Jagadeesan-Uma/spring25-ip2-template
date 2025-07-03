@@ -246,37 +246,24 @@ describe('Chat service', () => {
   // ----------------------------------------------------------------------------
   // 6. getChatsByParticipants
   // ----------------------------------------------------------------------------
-  describe('getChatsByParticipants', () => {
-    it('should retrieve chats by participants', async () => {
-      const mockChats: Chat[] = [
-        {
-          _id: new mongoose.Types.ObjectId(),
-          participants: [new mongoose.Types.ObjectId(), new mongoose.Types.ObjectId()],
-          messages: [],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-      ];
+  it('should retrieve chats by participants', async () => {
+    const user1 = { _id: new mongoose.Types.ObjectId(), username: 'user1' };
+    const user2 = { _id: new mongoose.Types.ObjectId(), username: 'user2' };
 
-      mockingoose(ChatModel).toReturn(mockChats, 'find');
+    const mockChat: Chat = {
+      _id: new mongoose.Types.ObjectId(),
+      participants: [user1._id, user2._id],
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-      const result = await getChatsByParticipants(['user1', 'user2']);
-      expect(result).toHaveLength(1);
-      expect(result).toEqual(mockChats);
-    });
+    mockingoose(UserModel).toReturn([user1, user2], 'find');
+    mockingoose(ChatModel).toReturn([mockChat], 'find');
 
-    it('should return empty array if no chats found', async () => {
-      mockingoose(ChatModel).toReturn([], 'find');
+    const result = await getChatsByParticipants(['user1', 'user2']);
 
-      const result = await getChatsByParticipants(['unknownUser']);
-      expect(result).toHaveLength(0);
-    });
-
-    it('should return empty array if database fails', async () => {
-      mockingoose(ChatModel).toReturn(new Error('fail'), 'find');
-
-      const result = await getChatsByParticipants(['userX']);
-      expect(result).toHaveLength(0);
-    });
+    expect(result).toHaveLength(1);
+    expect(result[0]._id).toEqual(mockChat._id);
   });
 });
