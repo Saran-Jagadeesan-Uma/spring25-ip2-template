@@ -42,8 +42,10 @@ const useProfileSettings = () => {
         setLoading(true);
         const data = await getUserByUsername(username);
         setUserData(data);
+        setErrorMessage(null);
       } catch (error) {
         setErrorMessage('Error fetching user profile');
+        setSuccessMessage(null);
         setUserData(null);
       } finally {
         setLoading(false);
@@ -63,42 +65,50 @@ const useProfileSettings = () => {
   const handleResetPassword = async () => {
     if (!username) {
       setErrorMessage('Username not found.');
+      setSuccessMessage(null);
       return;
     }
 
     if (!validatePasswords()) {
       setErrorMessage('Passwords do not match.');
+      setSuccessMessage(null);
       return;
     }
 
     try {
       await resetPassword(username, newPassword);
       setSuccessMessage('Password reset successfully.');
+      setErrorMessage(null);
       setNewPassword('');
       setConfirmNewPassword('');
     } catch (error) {
       setErrorMessage('Failed to reset password.');
+      setSuccessMessage(null);
     }
   };
 
   const handleUpdateBiography = async () => {
     if (!username) {
       setErrorMessage('Username not found.');
+      setSuccessMessage(null);
       return;
     }
     try {
       const updatedUser = await updateBiography(username, newBio);
       setUserData(updatedUser);
       setSuccessMessage('Biography updated successfully.');
+      setErrorMessage(null);
       setEditBioMode(false);
     } catch (error) {
       setErrorMessage('Failed to update biography.');
+      setSuccessMessage(null);
     }
   };
 
   const handleDeleteUser = () => {
     if (!username) {
       setErrorMessage('Username not found.');
+      setSuccessMessage(null);
       return;
     }
 
@@ -107,9 +117,11 @@ const useProfileSettings = () => {
       try {
         await deleteUser(username);
         setSuccessMessage('Account deleted successfully.');
+        setErrorMessage(null);
         navigate('/');
       } catch (error) {
         setErrorMessage('Failed to delete user.');
+        setSuccessMessage(null);
       } finally {
         setShowConfirmation(false);
       }
