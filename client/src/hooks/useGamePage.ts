@@ -24,11 +24,15 @@ const useGamePage = () => {
       try {
         await leaveGame(joinedGameID, user.username);
         socket?.emit('leaveGame', joinedGameID);
+        setGameState(null);
+        setJoinedGameID(null);
       } catch (err) {
         setError('Failed to leave game.');
       }
-    }
-
+    }else {
+    setGameState(null);
+    setJoinedGameID(null);
+  }
     navigate('/games');
   };
 
