@@ -29,10 +29,10 @@ const useGamePage = () => {
       } catch (err) {
         setError('Failed to leave game.');
       }
-    }else {
-    setGameState(null);
-    setJoinedGameID(null);
-  }
+    } else {
+      setGameState(null);
+      setJoinedGameID(null);
+    }
     navigate('/games');
   };
 
