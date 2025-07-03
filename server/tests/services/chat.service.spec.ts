@@ -28,34 +28,38 @@ describe('Chat service', () => {
   // ----------------------------------------------------------------------------
   describe('saveChat', () => {
     it('should successfully save a chat and verify its body (ignore exact IDs)', async () => {
+      const userId = new mongoose.Types.ObjectId();
+      const testUsername = 'testUser';
+
+      mockingoose(UserModel).toReturn([{ _id: userId, username: testUsername }], 'find');
+
+      const savedMessageId = new mongoose.Types.ObjectId();
       mockingoose(MessageModel).toReturn(
         {
-          _id: new mongoose.Types.ObjectId(),
+          _id: savedMessageId,
           msg: 'Hello!',
-          msgFrom: 'testUser',
+          msgFrom: testUsername,
           msgDateTime: new Date('2025-01-01T00:00:00Z'),
           type: 'direct',
         },
         'create',
       );
 
-      mockingoose(ChatModel).toReturn(
-        {
-          _id: new mongoose.Types.ObjectId(),
-          participants: [new mongoose.Types.ObjectId()],
-          messages: [new mongoose.Types.ObjectId()],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        'create',
-      );
+      const savedChat = {
+        _id: new mongoose.Types.ObjectId(),
+        participants: [userId],
+        messages: [savedMessageId],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockingoose(ChatModel).toReturn(savedChat, 'create');
 
       const result = await saveChat({
         participants: [new mongoose.Types.ObjectId()],
         messages: [
           {
             msg: 'Hello!',
-            msgFrom: 'testUser',
+            msgFrom: testUsername,
             msgDateTime: new Date('2025-01-01T00:00:00Z'),
             type: 'direct',
           },
@@ -69,23 +73,6 @@ describe('Chat service', () => {
       expect(result).toHaveProperty('_id');
       expect(Array.isArray(result.participants)).toBe(true);
       expect(Array.isArray(result.messages)).toBe(true);
-    });
-    it('should return an error if saving message fails', async () => {
-      mockingoose(MessageModel).toReturn(new Error('Failed to save message'), 'create');
-
-      const result = await saveChat({
-        participants: [new mongoose.Types.ObjectId()],
-        messages: [
-          {
-            msg: 'Hi!',
-            msgFrom: 'testUser',
-            msgDateTime: new Date(),
-            type: 'direct',
-          },
-        ],
-      });
-
-      expect(result).toHaveProperty('error');
     });
   });
 

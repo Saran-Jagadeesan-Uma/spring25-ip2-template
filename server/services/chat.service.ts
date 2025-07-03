@@ -60,7 +60,6 @@ export const createMessage = async (messageData: Message): Promise<MessageRespon
   }
 };
 
-
 /**
  * Adds a message ID to an existing chat.
  */

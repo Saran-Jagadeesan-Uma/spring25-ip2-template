@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import ChatModel from '../../models/chat.model';
 import supertest from 'supertest';
+import ChatModel from '../../models/chat.model';
 import { app } from '../../app';
 import * as chatService from '../../services/chat.service';
 import * as databaseUtil from '../../utils/database.util';
@@ -65,7 +65,7 @@ describe('Chat Controller', () => {
         populate: jest.fn().mockReturnValue({
           populate: jest.fn().mockResolvedValue(chatResponse),
         }),
-      } as any);
+      } as unknown as ReturnType<typeof ChatModel.findById>);
 
       const response = await supertest(app).post('/chat/chats').send(validChatPayload);
 
@@ -84,12 +84,6 @@ describe('Chat Controller', () => {
         msgDateTime: new Date('2025-01-01'),
         type: 'direct',
       };
-
-      const serializedPayload = {
-        ...messagePayload,
-        msgDateTime: messagePayload.msgDateTime.toISOString(),
-      };
-
       const messageResponse = {
         _id: new mongoose.Types.ObjectId(),
         ...messagePayload,
@@ -111,7 +105,9 @@ describe('Chat Controller', () => {
       addMessageSpy.mockResolvedValue(chatResponse);
       populateDocumentSpy.mockResolvedValue(chatResponse);
 
-      const response = await supertest(app).post(`/chat/chats/${chatId}/messages`).send(messagePayload);
+      const response = await supertest(app)
+        .post(`/chat/chats/${chatId}/messages`)
+        .send(messagePayload);
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
