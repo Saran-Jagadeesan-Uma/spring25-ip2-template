@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import { isValidObjectId } from 'mongoose';
 import {
   saveChat,
   createMessage,
@@ -18,7 +19,6 @@ import {
 import { FakeSOSocket } from '../types/socket';
 import ChatModel from '../models/chat.model';
 import { Message } from '../types/message';
-import { isValidObjectId } from 'mongoose';
 
 const chatController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -184,7 +184,7 @@ const chatController = (socket: FakeSOSocket) => {
     try {
       const updated = await addParticipantToChat(
         req.params.chatId,
-        req.body.participant.toString()
+        req.body.participant.toString(),
       );
       if ('error' in updated) {
         res.status(500).json(updated);
